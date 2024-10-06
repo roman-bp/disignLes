@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сучасні картки з SVG-значком</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="card-container" id="card-container">
+    <!-- Картки будуть додані динамічно -->
+  </div>
+
+  <!-- Модальне вікно -->
+  <div id="myModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Файли студента</h2>
+      <ul id="file-list"></ul>
+    </div>
+  </div>
+
+  <script>
+    fetch('data.json')
+      .then(response => response.json())
+      .then(data => {
+        const container = document.getElementById('card-container');
+        const modal = document.getElementById('myModal');
+        const fileList = document.getElementById('file-list');
+        const closeModal = document.getElementsByClassName('close')[0];
+
+        data.forEach(person => {
+          const card = document.createElement('div');
+          card.classList.add('card');
+
+          const img = document.createElement('img');
+          img.src = person.image;
+          img.alt = person.name;
+          img.classList.add('card-image');
+
+          const title = document.createElement('h2');
+          title.classList.add('card-title');
+          
+          // Додаємо ім'я з SVG поряд
+          title.innerHTML = `
+            ${person.name} 
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="#000" stroke-width="2" fill="green"/>
+            </svg>
+          `;
+
+          const description = document.createElement('p');
+          description.classList.add('card-description');
+          description.textContent = person.description;
+
+          // Додаємо SVG-іконку після опису для відкриття модального вікна
+          const svgIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svgIcon.setAttribute('width', '24');
+          svgIcon.setAttribute('height', '24');
+          svgIcon.setAttribute('viewBox', '0 0 24 24');
+          svgIcon.innerHTML = `
+  <circle cx="6" cy="12" r="2" fill="black" />
+  <circle cx="12" cy="12" r="2" fill="black" />
+  <circle cx="18" cy="12" r="2" fill="black" />
+`;
+
+          svgIcon.addEventListener('click', () => {
+            fileList.innerHTML = '';
+            person.files.forEach(file => {
+              const listItem = document.createElement('li');
+              listItem.innerHTML = `<a href="${file}" target="_blank">${file}</a>`;
+              fileList.appendChild(listItem);
+            });
+            modal.style.display = 'block';
+          });
+
+          card.appendChild(img);
+          card.appendChild(title);
+          card.appendChild(description);
+          card.appendChild(svgIcon);
+          container.appendChild(card);
+        });
+
+        // Закриття модального вікна
+        closeModal.onclick = () => {
+          modal.style.display = 'none';
+        };
+
+        window.onclick = (event) => {
+          if (event.target === modal) {
+            modal.style.display = 'none';
+          }
+        };
+      })
+      .catch(error => console.error('Помилка завантаження JSON:', error));
+  </script>
+</body>
+</html>
